@@ -8,58 +8,72 @@
             // variables globales
             var actions=null
             var members=null
+            var actionsType=null
+            var actionsTypeKeys=null
+            
+
             var fin=new Date("2021-04-19T23:55:00.0Z")
             var inicio=new Date("2021-03-23T00:00:00.0Z")
 
-            // Escritura en consola
-            function w(texto) {
-                document.getElementById("consola").innerHTML+=texto+"\n"
-            }
-            function wln(texto) {
-                w("<br/>")
-                w(texto)
-            }
 
+            // Escritura en elemento
+            Object.prototype.html=function(texto) {
+                this.innerHTML+=texto
+                return this
+            }
+            Object.prototype.cls=function() {
+                this.innerHTML=""
+                return this
+            }
             
             function nombreTablero() {
-                sp_nombre_tablero.innerHTML=data.name
+                sp_nombre_tablero.html(data.name)
             }
 
             function miembros() {
                 members=data.members
-                members.forEach( e => dv_miembros.innerHTML+="<li>"+e.fullName+"</li>\n")
+                members.forEach( e => dv_miembros.html("<li>"+e.fullName+"</li>\n"))
             }
 
-            function start() {
-                nombreTablero()
-                miembros()
-                var actions=data.actions
+            function numeroDeActividades() {
+                actions=data.actions
             
-                wln( "Número de acciones totales: "+actions.length)
+                dv_numero_actividades.html("<li>Número de actividades totales: "+actions.length+"</li>\n")
                 actions=actions.filter( e=>(inicio<=new Date(e.date) && new Date(e.date)<=fin) )
-                wln( "Número de acciones filtradas: "+actions.length)
+                dv_numero_actividades.html("<li>Número de actividades filtradas: "+actions.length+"</li>\n")
+            }
             
-                // Tipos de acciones
-            
+            function tiposDeActividades() {
+                // Tipos de Actividades
                 actionsType=[];
                 actions.forEach( e => { if
                     (typeof actionsType[e.type] !== 'undefined' ) {
                         ++actionsType[e.type];
                     } else {
-                        actionsType[e.type]=0
+                        actionsType[e.type]=1
                     }
                 })
-            
-                wln( "Tipos de actividdes")
-                Object.keys(actionsType).forEach( e => 
-                    wln( e +": "+actionsType[e] ))
+                            
+                actionsTypeKeys=Object.keys(actionsType).sort()
+                
+                actionsTypeKeys.forEach( e => 
+                    dv_tipo_actividades.html( "<li>"+e +": "+actionsType[e]+"</li>\n" ))
+                
+            }
+
+            function start() {
+                nombreTablero()
+                miembros()
+                numeroDeActividades()
+                tiposDeActividades()
+                
                 
                 // Miembros
                 members=data.members
                 cont=[]
                 members.forEach( e => cont[e.fullName]=0)
                 actions.forEach( e => cont[e.memberCreator.fullName]++)
-                members.forEach( e => wln( (fn=e.fullName)+": "+cont[fn]))
+                //members.forEach( e => wln( (fn=e.fullName)+": "+cont[fn]))
             }
         </script>
         
@@ -72,6 +86,11 @@
         <h3>Miembros</h3>
         <div id="dv_miembros"></div>
 
+        <h3>Número de Actividades</h3>
+        <div id="dv_numero_actividades"></div>
+
+        <h3>Tipos de Actividades</h3>
+        <div id="dv_tipo_actividades"></div>
 
         <div id="dv_consola"></div>
         <script>
