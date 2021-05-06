@@ -46,12 +46,14 @@
                 members.forEach( e => wln( (fn=e.fullName)+": "+cont[fn]))
             }
         
-            function procesarURL() {
+            function procesarURL(url) {
+                wln( "Recuperando datos... <span id='completado'></span>")
                 fetch(url).then(response => 
                     response.json().then(data => ({
                         data: data,
                         status: response.status
                     })
+                    , error=>(alert(error))
                 ).then(res => {
                     procesarDatos( res.data )
                 }));
@@ -72,7 +74,7 @@
             // asigno evento pulsar enter
             
             formUrl.onkeyup=( e => {
-                if(e.keyCode === 13) alert(12)
+                if(e.keyCode === 13) procesarURL(formUrl.value)
             } )
         </script>
 </body>
