@@ -3,8 +3,15 @@
         <title>
             Análisis de actividad en tableros Trello
         </title>
-        <script src="kVP1d6Tx.json.js"></script>
+        <script src="test.json.js"></script>
         <script>
+            // variables globales
+            var actions=null
+            var members=null
+            var fin=new Date("2021-04-19T23:55:00.0Z")
+            var inicio=new Date("2021-03-23T00:00:00.0Z")
+
+            // Escritura en consola
             function w(texto) {
                 document.getElementById("consola").innerHTML+=texto+"\n"
             }
@@ -12,12 +19,20 @@
                 w("<br/>")
                 w(texto)
             }
-        
-            function start() {
-                // Procesar la info.  
-                var fin=new Date("2021-04-19T23:55:00.0Z")
-                var inicio=new Date("2021-03-23T00:00:00.0Z")
+
             
+            function nombreTablero() {
+                sp_nombre_tablero.innerHTML=data.name
+            }
+
+            function miembros() {
+                members=data.members
+                members.forEach( e => dv_miembros.innerHTML+="<li>"+e.fullName+"</li>\n")
+            }
+
+            function start() {
+                nombreTablero()
+                miembros()
                 var actions=data.actions
             
                 wln( "Número de acciones totales: "+actions.length)
@@ -51,7 +66,14 @@
     </head>
     <body>
         <h1>Análisis de actividad en tableros Trello</h1>
-        <div id="consola"></div>
+        
+        <h2>Tablero: <span id="sp_nombre_tablero"></span></h2>
+        
+        <h3>Miembros</h3>
+        <div id="dv_miembros"></div>
+
+
+        <div id="dv_consola"></div>
         <script>
             start()
         </script>
