@@ -1,0 +1,31 @@
+<html>
+    <body>
+        <div id="consola"></div>
+    </body>
+
+<script src="g4.json.js"></script>
+<script>
+    function w(texto) {
+        document.getElementById("consola").innerHTML+=texto+"\n"
+    }
+    function wln(texto) {
+        w("<br/>")
+        w(texto)
+    }
+
+
+    var fin=new Date("2021-05-10T23:55:00.0Z")
+    var inicio=new Date("2021-04-20T00:00:00.0Z")
+
+    var actions=data.actions
+
+    wln( "Número de acciones totales: "+actions.length)
+    actions=actions.filter( e=>(inicio<=new Date(e.date) && new Date(e.date)<=fin) )
+    wln( "Número de acciones filtradas: "+actions.length)
+
+    members=data.members
+    cont=[]
+    members.forEach( e => cont[e.fullName]=0)
+    actions.forEach( e => cont[e.memberCreator.fullName]++)
+    members.forEach( e => wln( (fn=e.fullName)+": "+cont[fn]))
+</script>
