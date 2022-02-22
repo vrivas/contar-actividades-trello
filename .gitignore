@@ -1,3 +1,4 @@
 *.json.js
 .vscode/launch.json
 g4.json
+.gitignore~
