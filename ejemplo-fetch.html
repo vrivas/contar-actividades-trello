@@ -12,7 +12,7 @@
         var actionsTypeKeys = null
         var board = null
 
-        var fin = new Date("2021-04-19T23:55:00.0Z")
+        var fin = new Date("2025-04-19T23:55:00.0Z")
         var inicio = new Date("2021-03-23T00:00:00.0Z")
 
         function descargaDatos(callBackFn) {
@@ -74,9 +74,16 @@
             })
 
             actionsTypeKeys = Object.keys(actionsType).sort()
-
             actionsTypeKeys.forEach(e =>
                 dv_tipo_actividades.html("<li>" + e + ": " + actionsType[e] + "</li>\n"))
+
+        }
+
+        function tarjetas() {
+            // Tipos de Actividades
+            cards = board.cards.sort( (a,b)=>a.date-b.date);
+            cards.forEach(e =>
+                dv_tarjetas.html("<li>" + e.id + ": " + e.name + "</li>\n"))
 
         }
 
@@ -89,6 +96,7 @@
             miembros()
             numeroDeActividades()
             tiposDeActividades()
+            tarjetas()
 
 
             // Miembros
@@ -115,6 +123,10 @@
 
     <h3>Tipos de Actividades</h3>
     <div id="dv_tipo_actividades"></div>
+
+    <h3>Tarjetas</h3>
+    <div id="dv_tarjetas"></div>
+
 
     <div id="dv_consola"></div>
     <script>
