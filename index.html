@@ -18,6 +18,10 @@
         function porcentaje( a,b ) {
             return ((a/b)*100).toFixed(2)+"%"
         }
+
+        function fecha( f ) {
+            return (new Date(f)).toLocaleString("es-ES")
+        }
         function descargaDatos(callBackFn) {
             fetch("https://trello.com/b/vKq2Qi0w.json")
                 .then(function (response) {
@@ -85,7 +89,9 @@
             actionsType=agruparTiposDeAcciones( board.actions )
             actionsTypeKeys = Object.keys(actionsType).sort()            
             actionsTypeKeys.forEach(e =>
-                dv_tipo_acciones.html("<li>" + e + ": " + actionsType[e] + "</li>\n"))
+                dv_tipo_acciones.html("<li>" + e + ": " 
+                    + actionsType[e] 
+                    + "</li>\n"))
 
         }
 
@@ -124,6 +130,11 @@
             board.members.forEach(e => accionesPorMiembro(e))
         }
 
+        function old( a, prefix ) {
+            prefix = prefix || ""
+            return ( typeof a.data!=="undefined" 
+                    && typeof a.data.old!=="undefined" )?(prefix+JSON.stringify(a.data.old)):""
+        }
 
         function accionesPorTarjeta( c ) {
             let dv=dv_acciones_por_tarjeta;
@@ -139,9 +150,12 @@
                     "    
             
             susAcciones.forEach(e =>
-                dv.innerHTML+="\
-                        <li>" + e.type +": "+(new Date( e.date )).getTime()+
-                        "</li>\n"
+                dv.innerHTML+="<li>" 
+                            //+e.id+": "
+                            + e.type +": "
+                            +fecha( e.date )
+                        + old( e, " / <b>Cambios:</b> " )
+                        + "</li>\n"
             )
             
         }
@@ -164,12 +178,7 @@
             accionesTarjetas();
 
 
-            // Miembros
-            members = board.members
-            cont = []
-            members.forEach(e => cont[e.fullName] = 0)
-            actions.forEach(e => cont[e.memberCreator.fullName]++)
-            //members.forEach( e => wln( (fn=e.fullName)+": "+cont[fn]))
+            
         }
     </script>
 
