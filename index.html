@@ -1,0 +1,205 @@
+<html>
+
+<head>
+    <title>
+        Análisis de desempeño en tableros Trello
+    </title>
+    <script>
+        // variables globales
+        var actions = null
+        var members = null
+        var actionsType = null
+        var actionsTypeKeys = null
+        var board = null
+
+        var fin = new Date("2025-04-19T23:55:00.0Z")
+        var inicio = new Date("2021-03-23T00:00:00.0Z")
+
+        function porcentaje( a,b ) {
+            return ((a/b)*100).toFixed(2)+"%"
+        }
+        function descargaDatos(callBackFn) {
+            fetch("https://trello.com/b/vKq2Qi0w.json")
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {  
+                    board= JSON.parse(JSON.stringify(data))
+                    callBackFn()
+                    return
+                })
+                .catch(function (err) {
+                    // If an error occured, you will catch it here
+                    console.log("OJO Error: " + err)
+                });
+        }
+
+    </script>
+    <script>
+
+        // Escritura en elemento
+        Object.prototype.html = function (texto) {
+            this.innerHTML += texto
+            return this
+        }
+        Object.prototype.cls = function () {
+            this.innerHTML = ""
+            return this
+        }
+
+        function nombreTablero() {
+            sp_nombre_tablero.html(board.name)
+        }
+
+        function miembros() {
+            members = board.members
+            members.forEach(e => dv_miembros.html("<li>" 
+                + e.fullName 
+                + ": "
+                + e.id
+                + "</li>\n"))
+        }
+
+        function numeroDeAcciones() {
+            actions = board.actions
+
+            dv_numero_acciones.html("<li>Número de acciones totales: " + actions.length + "</li>\n")
+            actions = actions.filter(e => (inicio <= new Date(e.date) && new Date(e.date) <= fin))
+            dv_numero_acciones.html("<li>Número de acciones filtradas: " + actions.length + "</li>\n")
+        }
+
+        function agruparTiposDeAcciones(act) {
+            let actType = [];
+            act.forEach(e => {
+                if
+                    (typeof actType[e.type] !== 'undefined') {
+                    ++actType[e.type];
+                } else {
+                    actType[e.type] = 1
+                }
+            })
+            return actType;
+        }
+        function tiposDeAcciones() {
+            // Tipos de acciones
+            actionsType=agruparTiposDeAcciones( board.actions )
+            actionsTypeKeys = Object.keys(actionsType).sort()            
+            actionsTypeKeys.forEach(e =>
+                dv_tipo_acciones.html("<li>" + e + ": " + actionsType[e] + "</li>\n"))
+
+        }
+
+        function tarjetas() {
+            // Tipos de acciones
+            cards = board.cards.sort( (a,b)=>a.date-b.date);
+            cards.forEach(e =>
+                dv_tarjetas.html("<li>" + e.id + ": " + e.name + "</li>\n"))
+
+        }
+
+
+        function accionesPorMiembro( m ) {
+            let dv=dv_acciones_por_miembro;
+            dv.innerHTML+="<h4>"+m.fullName+" ("+m.id+")</h4>\n";
+            let susAcciones = board.actions.filter( e=>e.memberCreator.id==m.id );
+            dv.innerHTML+="\
+                <p><strong>Acciones totales:</strong> "+susAcciones.length
+                    +" ("+porcentaje(susAcciones.length, board.actions.length)+ ")\
+                    </p>\
+                    "    
+
+            susTipos=agruparTiposDeAcciones( susAcciones )
+            susLlaves = Object.keys(susTipos).sort()            
+            susLlaves.forEach(e =>
+                dv.innerHTML+="\
+                        <li>" + e + ": "
+                        + susTipos[e] 
+                        + " (" + porcentaje(susTipos[e], actionsType[e])+ ")\
+                        </li>\
+                    "
+            )
+        }
+
+        function accionesMiembros() {
+            board.members.forEach(e => accionesPorMiembro(e))
+        }
+
+
+        function accionesPorTarjeta( c ) {
+            let dv=dv_acciones_por_tarjeta;
+            dv.innerHTML+="<h4>"+c.name+" ("+c.id+")</h4>\n";
+            let susAcciones =board.actions.filter( e=> typeof e.data!=="undefined" )
+                            .filter( e=>typeof e.data.card!=="undefined")
+                            .filter( e=>e.data.card.id==c.id )
+                            .sort((a,b)=>(new Date(a.date)).getTime()-(new Date(b.date)).getTime())
+            dv.innerHTML+="\
+                <p><strong>Acciones totales:</strong> "+susAcciones.length
+                    +" ("+porcentaje(susAcciones.length, board.actions.length)+ ")\
+                    </p>\
+                    "    
+            
+            susAcciones.forEach(e =>
+                dv.innerHTML+="\
+                        <li>" + e.type +": "+(new Date( e.date )).getTime()+
+                        "</li>\n"
+            )
+            
+        }
+
+
+        function accionesTarjetas() {
+            board.cards.forEach(e => accionesPorTarjeta(e))
+        }
+        function start() {
+            if ( !board ) {
+                descargaDatos( start )
+                return
+            }
+            nombreTablero()
+            miembros()
+            numeroDeAcciones()
+            tiposDeAcciones()
+            tarjetas()
+            accionesMiembros();
+            accionesTarjetas();
+
+
+            // Miembros
+            members = board.members
+            cont = []
+            members.forEach(e => cont[e.fullName] = 0)
+            actions.forEach(e => cont[e.memberCreator.fullName]++)
+            //members.forEach( e => wln( (fn=e.fullName)+": "+cont[fn]))
+        }
+    </script>
+
+</head>
+
+<body>
+    <h1>Análisis de accion en tableros Trello</h1>
+
+    <h2>Tablero: <span id="sp_nombre_tablero"></span></h2>
+
+    <h3>Miembros</h3>
+    <div id="dv_miembros"></div>
+
+    <h3>Número de acciones</h3>
+    <div id="dv_numero_acciones"></div>
+
+    <h3>Tipos de acciones</h3>
+    <div id="dv_tipo_acciones"></div>
+
+    <h3>Tarjetas</h3>
+    <div id="dv_tarjetas"></div>
+
+    <h2>Acciones por miembro</h2>
+    <div id="dv_acciones_por_miembro"></div>
+
+    <h2>Acciones por tarjeta</h2>
+    <div id="dv_acciones_por_tarjeta"></div>
+
+    <div id="dv_consola"></div>
+    <script>
+        start()
+    </script>
+</body>
