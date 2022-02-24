@@ -11,6 +11,7 @@
         var actionsType = null
         var actionsTypeKeys = null
         var board = null
+        var cards = null
 
         var fin = new Date("2025-04-19T23:55:00.0Z")
         var inicio = new Date("2021-03-23T00:00:00.0Z")
@@ -51,8 +52,15 @@
             sp_nombre_tablero.html(board.name)
         }
 
-        function miembros() {
+        function rellenaVectores() {
+            actions = board.actions
             members = board.members
+            actionsType=agruparTiposDeAcciones( actions )
+            actionsTypeKeys = Object.keys(actionsType).sort()
+            cards = board.cards
+        }
+
+        function miembros() {
             members.forEach(e => dv_miembros.html("<li>" 
                 + e.fullName 
                 + ": "
@@ -61,8 +69,6 @@
         }
 
         function numeroDeAcciones() {
-            actions = board.actions
-
             dv_numero_acciones.html("<li>Número de acciones totales: " + actions.length + "</li>\n")
             actions = actions.filter(e => (inicio <= new Date(e.date) && new Date(e.date) <= fin))
             dv_numero_acciones.html("<li>Número de acciones filtradas: " + actions.length + "</li>\n")
@@ -82,8 +88,6 @@
         }
         function tiposDeAcciones() {
             // Tipos de acciones
-            actionsType=agruparTiposDeAcciones( board.actions )
-            actionsTypeKeys = Object.keys(actionsType).sort()            
             actionsTypeKeys.forEach(e =>
                 dv_tipo_acciones.html("<li>" + e + ": " + actionsType[e] + "</li>\n"))
 
@@ -91,8 +95,8 @@
 
         function tarjetas() {
             // Tipos de acciones
-            cards = board.cards.sort( (a,b)=>a.date-b.date);
-            cards.forEach(e =>
+            sorted_cards = cards.sort( (a,b)=>a.date-b.date);
+            sorted_cards.forEach(e =>
                 dv_tarjetas.html("<li>" + e.id + ": " + e.name + "</li>\n"))
 
         }
@@ -101,7 +105,7 @@
         function accionesPorMiembro( m ) {
             let dv=dv_acciones_por_miembro;
             dv.innerHTML+="<h4>"+m.fullName+" ("+m.id+")</h4>\n";
-            let susAcciones = board.actions.filter( e=>e.memberCreator.id==m.id );
+            let susAcciones = actions.filter( e=>e.memberCreator.id==m.id );
             dv.innerHTML+="\
                 <p><strong>Acciones totales:</strong> "+susAcciones.length
                     +" ("+porcentaje(susAcciones.length, board.actions.length)+ ")\
@@ -121,20 +125,20 @@
         }
 
         function accionesMiembros() {
-            board.members.forEach(e => accionesPorMiembro(e))
+            members.forEach(e => accionesPorMiembro(e))
         }
 
 
         function accionesPorTarjeta( c ) {
             let dv=dv_acciones_por_tarjeta;
             dv.innerHTML+="<h4>"+c.name+" ("+c.id+")</h4>\n";
-            let susAcciones =board.actions.filter( e=> typeof e.data!=="undefined" )
+            let susAcciones =actions.filter( e=> typeof e.data!=="undefined" )
                             .filter( e=>typeof e.data.card!=="undefined")
                             .filter( e=>e.data.card.id==c.id )
                             .sort((a,b)=>(new Date(a.date)).getTime()-(new Date(b.date)).getTime())
             dv.innerHTML+="\
                 <p><strong>Acciones totales:</strong> "+susAcciones.length
-                    +" ("+porcentaje(susAcciones.length, board.actions.length)+ ")\
+                    +" ("+porcentaje(susAcciones.length, actions.length)+ ")\
                     </p>\
                     "    
             
@@ -148,13 +152,14 @@
 
 
         function accionesTarjetas() {
-            board.cards.forEach(e => accionesPorTarjeta(e))
+            cards.forEach(e => accionesPorTarjeta(e))
         }
         function start() {
             if ( !board ) {
                 descargaDatos( start )
                 return
             }
+            rellenaVectores()
             nombreTablero()
             miembros()
             numeroDeAcciones()
