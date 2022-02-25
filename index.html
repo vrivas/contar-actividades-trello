@@ -26,6 +26,7 @@
         function descargaDatos(callBackFn) {
             let sufijo=".json"
             let url=t_tablero.value+sufijo
+            // url="https://trello.com/b/vKq2Qi0w.json"
             if( url.length<=sufijo.length ) return
 
             fetch(url)
@@ -177,15 +178,29 @@
             t_tablero.onblur=function() {
                 board=null                
                 start()
-            }            
+            }
+            t_tablero.onkeydown=function(event) {
+                if(event.keyCode == 13) {
+                   t_tablero.blur()
+                }
+            }
+                        
         }
 
+        function vaciaDivs() {
+            let borrables=document.getElementsByClassName( "borrable")
+
+            for( i=0; i<borrables.length; ++i ) {
+                borrables[i].innerHTML=""
+            }
+        }
         function start() {
             if ( !board ) {
                 descargaDatos( start )
                 return
             } 
             rellenaVectores()
+            vaciaDivs()
             nombreTablero()
             miembros()
             numeroDeAcciones()
@@ -201,29 +216,29 @@
 <body>
     <h1>Análisis de accion en tableros Trello</h1>
 
-    <input type="text" id="t_tablero" value=""/>
-
-    <h2>Tablero: <span id="sp_nombre_tablero"></span></h2>
+    <h4>Url del JSON del tablero: <input type="text" id="t_tablero" value="https://trello.com/b/vKq2Qi0w"/>.json</h4>
+    https://trello.com/b/OFvTEfcB
+    <h2>Tablero: <span id="sp_nombre_tablero" class="borrable"></span></h2>
 
     <h3>Miembros</h3>
-    <div id="dv_miembros"></div>
+    <div id="dv_miembros" class="borrable"></div>
 
     <h3>Número de acciones</h3>
-    <div id="dv_numero_acciones"></div>
+    <div id="dv_numero_acciones" class="borrable"></div>
 
     <h3>Tipos de acciones</h3>
-    <div id="dv_tipo_acciones"></div>
+    <div id="dv_tipo_acciones" class="borrable"></div>
 
     <h3>Tarjetas</h3>
-    <div id="dv_tarjetas"></div>
+    <div id="dv_tarjetas" class="borrable"></div>
 
     <h2>Acciones por miembro</h2>
-    <div id="dv_acciones_por_miembro"></div>
+    <div id="dv_acciones_por_miembro" class="borrable"></div>
 
     <h2>Acciones por tarjeta</h2>
-    <div id="dv_acciones_por_tarjeta"></div>
+    <div id="dv_acciones_por_tarjeta" class="borrable"></div>
 
-    <div id="dv_consola"></div>
+    <div id="dv_consola" class="borrable"></div>
     <script>
         asignaEventos()
         start()
