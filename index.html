@@ -24,7 +24,11 @@
             return (new Date(f)).toLocaleString("es-ES")
         }
         function descargaDatos(callBackFn) {
-            fetch("https://trello.com/b/vKq2Qi0w.json")
+            let sufijo=".json"
+            let url=t_tablero.value+sufijo
+            if( url.length<=sufijo.length ) return
+
+            fetch(url)
                 .then(function (response) {
                     return response.json();
                 })
@@ -168,11 +172,19 @@
         function accionesTarjetas() {
             cards.forEach(e => accionesPorTarjeta(e))
         }
+
+        function asignaEventos() {
+            t_tablero.onblur=function() {
+                board=null                
+                start()
+            }            
+        }
+
         function start() {
             if ( !board ) {
                 descargaDatos( start )
                 return
-            }
+            } 
             rellenaVectores()
             nombreTablero()
             miembros()
@@ -180,10 +192,7 @@
             tiposDeAcciones()
             tarjetas()
             accionesMiembros();
-            accionesTarjetas();
-
-
-            
+            accionesTarjetas();            
         }
     </script>
 
@@ -191,6 +200,8 @@
 
 <body>
     <h1>Análisis de accion en tableros Trello</h1>
+
+    <input type="text" id="t_tablero" value=""/>
 
     <h2>Tablero: <span id="sp_nombre_tablero"></span></h2>
 
@@ -214,6 +225,7 @@
 
     <div id="dv_consola"></div>
     <script>
+        asignaEventos()
         start()
     </script>
 </body>
