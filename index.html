@@ -62,9 +62,26 @@
         }
 
         function rellenaVectores() {
-            actions = board.actions
+            actions_filtered = actions_all = board.actions
+            if( fecha_inicio.value) {
+                var inicio=new Date( fecha_inicio.value )
+                inicio.setHours(0)
+                inicio.setMinutes(0)
+                inicio.setSeconds(0)
+                inicio.setMilliseconds(0)
+                actions_filtered = actions_all.filter(e => inicio <= new Date(e.date) )
+            } 
+            if( fecha_final.value) {
+                var fin=new Date( fecha_final.value )
+                fin.setHours(23)
+                fin.setMinutes(59)
+                fin.setSeconds(59)
+                fin.setMilliseconds(999)            
+                
+                actions_filtered = actions_filtered.filter(e => new Date(e.date) <= fin)
+            }
             members = board.members
-            actionsType=agruparTiposDeAcciones( actions )
+            actionsType=agruparTiposDeAcciones( actions_filtered )
             actionsTypeKeys = Object.keys(actionsType).sort()
             cards = board.cards
         }
@@ -78,9 +95,8 @@
         }
 
         function numeroDeAcciones() {
-            dv_numero_acciones.html("<li>Número de acciones totales: " + actions.length + "</li>\n")
-            actions = actions.filter(e => (inicio <= new Date(e.date) && new Date(e.date) <= fin))
-            dv_numero_acciones.html("<li>Número de acciones filtradas: " + actions.length + "</li>\n")
+            dv_numero_acciones.html("<li>Número de acciones totales: " + actions_all.length + "</li>\n")
+            dv_numero_acciones.html("<li>Número de acciones filtradas: " + actions_filtered.length + "</li>\n")
         }
 
         function agruparTiposDeAcciones(act) {
@@ -116,10 +132,10 @@
         function accionesPorMiembro( m ) {
             let dv=dv_acciones_por_miembro;
             dv.innerHTML+="<h4>"+m.fullName+" ("+m.id+")</h4>\n";
-            let susAcciones = actions.filter( e=>e.memberCreator.id==m.id );
+            let susAcciones = actions_filtered.filter( e=>e.memberCreator.id==m.id );
             dv.innerHTML+="\
                 <p><strong>Acciones totales:</strong> "+susAcciones.length
-                    +" ("+porcentaje(susAcciones.length, board.actions.length)+ ")\
+                    +" ("+porcentaje(susAcciones.length, actions_filtered.length)+ ")\
                     </p>\
                     "    
 
@@ -148,13 +164,14 @@
         function accionesPorTarjeta( c ) {
             let dv=dv_acciones_por_tarjeta;
             dv.innerHTML+="<h4>"+c.name+" ("+c.id+")</h4>\n";
-            let susAcciones =actions.filter( e=> typeof e.data!=="undefined" )
+            let susAcciones =actions_filtered
+                            .filter( e=> typeof e.data!=="undefined" )
                             .filter( e=>typeof e.data.card!=="undefined")
                             .filter( e=>e.data.card.id==c.id )
                             .sort((a,b)=>(new Date(a.date)).getTime()-(new Date(b.date)).getTime())
             dv.innerHTML+="\
                 <p><strong>Acciones totales:</strong> "+susAcciones.length
-                    +" ("+porcentaje(susAcciones.length, actions.length)+ ")\
+                    +" ("+porcentaje(susAcciones.length, actions_filtered.length)+ ")\
                     </p>\
                     "    
             
@@ -184,6 +201,10 @@
                    t_tablero.blur()
                 }
             }
+            fecha_inicio.onchange=
+            fecha_final.onchange=function() {
+                imprimeInformacionFiltrandoAccionesPorFechas()
+            }
                         
         }
 
@@ -194,11 +215,8 @@
                 borrables[i].innerHTML=""
             }
         }
-        function start() {
-            if ( !board ) {
-                descargaDatos( start )
-                return
-            } 
+
+        function imprimeInformacionFiltrandoAccionesPorFechas() {
             rellenaVectores()
             vaciaDivs()
             nombreTablero()
@@ -208,6 +226,13 @@
             tarjetas()
             accionesMiembros();
             accionesTarjetas();            
+        }
+        function start() {
+            if ( !board ) {
+                descargaDatos( start )
+                return
+            } 
+            imprimeInformacionFiltrandoAccionesPorFechas()     
         }
     </script>
 
