@@ -1,5 +1,5 @@
+<!DOCTYPE html>
 <html>
-
 <head>
     <title>
         Análisis de desempeño en tableros Trello
@@ -131,11 +131,12 @@
 
         function accionesPorMiembro( m ) {
             let dv=dv_acciones_por_miembro;
-            dv.innerHTML+="<h4>"+m.fullName+" ("+m.id+")</h4>\n";
             let susAcciones = actions_filtered.filter( e=>e.memberCreator.id==m.id );
+            let suPorcentaje = porcentaje(susAcciones.length, actions_filtered.length)
+            dv.innerHTML+="<h4>"+m.fullName+" "+suPorcentaje+" ("+m.id+")</h4>\n";
             dv.innerHTML+="\
                 <p><strong>Acciones totales:</strong> "+susAcciones.length
-                    +" ("+porcentaje(susAcciones.length, actions_filtered.length)+ ")\
+                    +" ("+suPorcentaje+")\
                     </p>\
                     "    
 
