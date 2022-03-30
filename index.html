@@ -129,18 +129,35 @@
         }
 
 
-        function accionesPorMiembro( m ) {
-            let dv=dv_acciones_por_miembro;
+        function calcularAccionesPorMiembro( m ) {
             let susAcciones = actions_filtered.filter( e=>e.memberCreator.id==m.id );
             let suPorcentaje = porcentaje(susAcciones.length, actions_filtered.length)
-            dv.innerHTML+="<h4>"+m.fullName+" "+suPorcentaje+" ("+m.id+")</h4>\n";
+            
+            return {
+                "acciones": susAcciones
+                , "porcentaje": suPorcentaje
+                , "nombre": m.fullName
+                , "id": m.id
+            }
+        }
+
+        function mostrarResumenAccionesPorMiembro( m ) {
+            let dv=dv_resumen_acciones_por_miembro;
+            let o = calcularAccionesPorMiembro( m )
+            dv.innerHTML+="<li>"+o.nombre+": "+o.porcentaje+"</li>\n";
+        }
+
+        function mostrarAccionesPorMiembro( m ) {
+            let dv=dv_acciones_por_miembro;
+            let o = calcularAccionesPorMiembro( m )
+            dv.innerHTML+="<h4>"+o.nombre+" "+o.porcentaje+" ("+o.id+")</h4>\n";
             dv.innerHTML+="\
-                <p><strong>Acciones totales:</strong> "+susAcciones.length
-                    +" ("+suPorcentaje+")\
+                <p><strong>Acciones totales:</strong> "+o.acciones.length
+                    +" ("+o.porcentaje+")\
                     </p>\
                     "    
 
-            susTipos=agruparTiposDeAcciones( susAcciones )
+            susTipos=agruparTiposDeAcciones( o.acciones )
             susLlaves = Object.keys(susTipos).sort()            
             susLlaves.forEach(e =>
                 dv.innerHTML+="\
@@ -152,8 +169,13 @@
             )
         }
 
-        function accionesMiembros() {
-            members.forEach(e => accionesPorMiembro(e))
+        function mostrarResumenAccionesMiembros() {
+            members.forEach(e => mostrarResumenAccionesPorMiembro(e))
+
+        }
+        function mostrarAccionesMiembros() {
+            members.forEach(e => mostrarAccionesPorMiembro(e))
+
         }
 
         function old( a, prefix ) {
@@ -225,7 +247,8 @@
             numeroDeAcciones()
             tiposDeAcciones()
             tarjetas()
-            accionesMiembros();
+            mostrarResumenAccionesMiembros()    
+            mostrarAccionesMiembros();
             accionesTarjetas();            
         }
         function start() {
@@ -253,6 +276,9 @@
     <h3>Miembros</h3>
     <div id="dv_miembros" class="borrable"></div>
 
+    
+
+
     <h3>Número de acciones</h3>
     <div id="dv_numero_acciones" class="borrable"></div>
 
@@ -263,6 +289,9 @@
     <div id="dv_tarjetas" class="borrable"></div>
 
     <h2>Acciones por miembro</h2>
+    <div id="dv_resumen_acciones_por_miembro" class="borrable"></div>
+
+    <h3>Detalle de acciones por miembro</h2>
     <div id="dv_acciones_por_miembro" class="borrable"></div>
 
     <h2>Acciones por tarjeta</h2>
