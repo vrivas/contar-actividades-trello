@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+ 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">    <style>
+      h1 {
+        background-color: blue;
+      }
+    </style>
     <title>
         Análisis de desempeño en tableros Trello
     </title>
@@ -263,7 +274,7 @@
 </head>
 
 <body>
-    <h1>Análisis de accion en tableros Trello</h1>
+    <h1 class="well well-lg well-victor">Análisis de accion en tableros Trello</h1>
 
     <h4>Url del JSON del tablero: <input type="text" id="t_tablero" value="https://trello.com/b/vKq2Qi0w"/>.json</h4>
     https://trello.com/b/OFvTEfcB
@@ -303,3 +314,85 @@
         start()
     </script>
 </body>
+
+<style>
+  * {
+      font-family: Arial, Helvetica, Sans;
+  }
+  body {
+    color: black;
+    background-color: white;
+  }
+  body.contraste {
+    color: white;
+    background-color: black;
+  }
+  input{
+      border: 0pt;
+      font-size: 1em;
+      background-color: inherit;
+      border-bottom: 1px solid #ddd;
+      color: inherit;
+
+  }
+  input:hover {
+      background-color: #ddd;
+  }
+  input:focus {
+      background-color: #ddf;
+      color: #229;
+  }
+  input[type="Submit"] {
+      margin-right: 1em;
+  }
+  .rojo {
+      background-color: #daa;
+  }
+  .transparente {
+      background-color: inherit;
+  }
+  label {
+      width: 22%;
+      display: block;
+      float: left;
+      padding: 0pt;
+      margin: 0pt;
+  }
+  h1 {
+      font-size: 150%;
+  }
+
+  h3 {
+      font-size: 120%;
+  }
+
+  body {
+      margin: 10px;
+  }
+
+  select {
+      font-size: 70%;
+  }
+
+  .well-victor{
+      background: rgb(22, 105, 173);
+      color: #fff;
+  }
+
+  #datos {
+      margin-left: 3em;
+      font-size: 80%;
+  }
+
+
+  .progress {
+      height: 2em;
+  }
+  .progress-bar{
+
+      padding-top: 0.25em;
+      font-size: 120%;
+  }
+
+</style>
+</html>
