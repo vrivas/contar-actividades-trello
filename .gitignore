@@ -2,3 +2,4 @@
 .vscode/launch.json
 g4.json
 .gitignore~
+.DS_Store
