@@ -1,398 +1,541 @@
 <!DOCTYPE html>
 <html>
+
 <head>
- 
+
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 
   <!-- Optional theme -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">    <style>
-      h1 {
-        background-color: blue;
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+  <style>
+    h1 {
+      background-color: blue;
+    }
+  </style>
+  <title>
+    Análisis de desempeño en tableros Trello
+  </title>
+  <script>
+    // variables globales
+    var actions = null
+    var members = null
+    var actionsType = null
+    var actionsTypeKeys = null
+    var board = null
+    var cards = null
+
+    // para que no haga esperar al usuario la primera vez que carga la página mientras hace como que "limpia" los divs :)
+    var esPrimeraVez = true
+
+    var fin = new Date("2025-04-19T23:55:00.0Z")
+    var inicio = new Date("2021-03-23T00:00:00.0Z")
+
+    function porcentaje(a, b) {
+      return ((a / b) * 100).toFixed(2) + "%"
+    }
+
+    function fecha(f) {
+      return (new Date(f)).toLocaleString("es-ES")
+    }
+    function descargaDatos(callBackFn) {
+      let sufijo = ".json"
+      // 29 son los caracteres que forman: https://trello.com/b/vKq2Qi0w
+      let prefijo = t_tablero.value.substr( 0, 29)
+      t_tablero.value=prefijo
+      let url = prefijo + sufijo
+      // url="https://trello.com/b/vKq2Qi0w.json"
+      if (url.length <= sufijo.length) return
+
+      fetch(url)
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (data) {
+          board = JSON.parse(JSON.stringify(data))
+          callBackFn()
+          return
+        })
+        .catch(function (err) {
+          // If an error occured, you will catch it here
+          console.log("OJO Error: " + err)
+        });
+    }
+
+  </script>
+  <script>
+
+    // Escritura en elemento
+    Object.prototype.html = function (texto) {
+      this.innerHTML += texto
+      return this
+    }
+    Object.prototype.cls = function () {
+      this.innerHTML = ""
+      return this
+    }
+
+    function nombreTablero() {
+      sp_nombre_tablero.html(board.name)
+    }
+
+    function rellenaVectores() {
+      actions_filtered = actions_all = board.actions
+      if (fecha_inicio.value) {
+        var inicio = new Date(fecha_inicio.value)
+        inicio.setHours(0)
+        inicio.setMinutes(0)
+        inicio.setSeconds(0)
+        inicio.setMilliseconds(0)
+        actions_filtered = actions_all.filter(e => inicio <= new Date(e.date))
       }
-    </style>
-    <title>
-        Análisis de desempeño en tableros Trello
-    </title>
-    <script>
-        // variables globales
-        var actions = null
-        var members = null
-        var actionsType = null
-        var actionsTypeKeys = null
-        var board = null
-        var cards = null
+      if (fecha_final.value) {
+        var fin = new Date(fecha_final.value)
+        fin.setHours(23)
+        fin.setMinutes(59)
+        fin.setSeconds(59)
+        fin.setMilliseconds(999)
 
-        var fin = new Date("2025-04-19T23:55:00.0Z")
-        var inicio = new Date("2021-03-23T00:00:00.0Z")
+        actions_filtered = actions_filtered.filter(e => new Date(e.date) <= fin)
+      }
+      members = board.members
+      actionsType = agruparTiposDeAcciones(actions_filtered)
+      actionsTypeKeys = Object.keys(actionsType).sort()
+      cards = board.cards
+    }
 
-        function porcentaje( a,b ) {
-            return ((a/b)*100).toFixed(2)+"%"
+    function miembros() {
+      members.forEach(e => dv_miembros.html("<li>"
+        + e.fullName
+        + " - "
+        + "<a href='https://trello.com/" + e.id + "' target='_new'>Ver perfil</a>"
+        + "</li>\n"))
+    }
+
+    function numeroDeAcciones() {
+      dv_numero_acciones.html("<li>Acciones totales: " + actions_all.length + "</li>\n")
+      dv_numero_acciones.html("<li>Acciones filtradas por fecha: " + actions_filtered.length + "</li>\n")
+    }
+
+    function agruparTiposDeAcciones(act) {
+      let actType = [];
+      act.forEach(e => {
+        if
+          (typeof actType[e.type] !== 'undefined') {
+          ++actType[e.type];
+        } else {
+          actType[e.type] = 1
         }
+      })
+      return actType;
+    }
+    function tiposDeAcciones() {
+      // Tipos de acciones
+      actionsTypeKeys.forEach(e =>
+        dv_tipo_acciones.html("<li>" + e + ": "
+          + actionsType[e]
+          + "</li>\n"))
 
-        function fecha( f ) {
-            return (new Date(f)).toLocaleString("es-ES")
-        }
-        function descargaDatos(callBackFn) {
-            let sufijo=".json"
-            let url=t_tablero.value+sufijo
-            // url="https://trello.com/b/vKq2Qi0w.json"
-            if( url.length<=sufijo.length ) return
+    }
 
-            fetch(url)
-                .then(function (response) {
-                    return response.json();
-                })
-                .then(function (data) {  
-                    board= JSON.parse(JSON.stringify(data))
-                    callBackFn()
-                    return
-                })
-                .catch(function (err) {
-                    // If an error occured, you will catch it here
-                    console.log("OJO Error: " + err)
-                });
-        }
+    function tarjetas() {
+      // Tipos de acciones
+      sorted_cards = cards.sort((a, b) => (a.name<b.name?-1:(a.name>b.name)?1:0));
+      sorted_cards.forEach(e =>
+        dv_tarjetas.html("<li title='" + e.id + "'>" 
+          + "<a href='#tarjeta_"+e.id+"'>"
+          + e.name 
+          + "</a></li>\n"))
 
-    </script>
-    <script>
-
-        // Escritura en elemento
-        Object.prototype.html = function (texto) {
-            this.innerHTML += texto
-            return this
-        }
-        Object.prototype.cls = function () {
-            this.innerHTML = ""
-            return this
-        }
-
-        function nombreTablero() {
-            sp_nombre_tablero.html(board.name)
-        }
-
-        function rellenaVectores() {
-            actions_filtered = actions_all = board.actions
-            if( fecha_inicio.value) {
-                var inicio=new Date( fecha_inicio.value )
-                inicio.setHours(0)
-                inicio.setMinutes(0)
-                inicio.setSeconds(0)
-                inicio.setMilliseconds(0)
-                actions_filtered = actions_all.filter(e => inicio <= new Date(e.date) )
-            } 
-            if( fecha_final.value) {
-                var fin=new Date( fecha_final.value )
-                fin.setHours(23)
-                fin.setMinutes(59)
-                fin.setSeconds(59)
-                fin.setMilliseconds(999)            
-                
-                actions_filtered = actions_filtered.filter(e => new Date(e.date) <= fin)
-            }
-            members = board.members
-            actionsType=agruparTiposDeAcciones( actions_filtered )
-            actionsTypeKeys = Object.keys(actionsType).sort()
-            cards = board.cards
-        }
-
-        function miembros() {
-            members.forEach(e => dv_miembros.html("<li>" 
-                + e.fullName 
-                + ": "
-                + e.id
-                + "</li>\n"))
-        }
-
-        function numeroDeAcciones() {
-            dv_numero_acciones.html("<li>Número de acciones totales: " + actions_all.length + "</li>\n")
-            dv_numero_acciones.html("<li>Número de acciones filtradas: " + actions_filtered.length + "</li>\n")
-        }
-
-        function agruparTiposDeAcciones(act) {
-            let actType = [];
-            act.forEach(e => {
-                if
-                    (typeof actType[e.type] !== 'undefined') {
-                    ++actType[e.type];
-                } else {
-                    actType[e.type] = 1
-                }
-            })
-            return actType;
-        }
-        function tiposDeAcciones() {
-            // Tipos de acciones
-            actionsTypeKeys.forEach(e =>
-                dv_tipo_acciones.html("<li>" + e + ": " 
-                    + actionsType[e] 
-                    + "</li>\n"))
-
-        }
-
-        function tarjetas() {
-            // Tipos de acciones
-            sorted_cards = cards.sort( (a,b)=>a.date-b.date);
-            sorted_cards.forEach(e =>
-                dv_tarjetas.html("<li>" + e.id + ": " + e.name + "</li>\n"))
-
-        }
+    }
 
 
-        function calcularAccionesPorMiembro( m ) {
-            let susAcciones = actions_filtered.filter( e=>e.memberCreator.id==m.id );
-            let suPorcentaje = porcentaje(susAcciones.length, actions_filtered.length)
-            
-            return {
-                "acciones": susAcciones
-                , "porcentaje": suPorcentaje
-                , "nombre": m.fullName
-                , "id": m.id
-            }
-        }
+    function calcularAccionesPorMiembro(m) {
+      let susAcciones = actions_filtered.filter(e => e.memberCreator.id == m.id);
+      let suPorcentaje = porcentaje(susAcciones.length, actions_filtered.length)
 
-        function mostrarResumenAccionesPorMiembro( m ) {
-            let dv=dv_resumen_acciones_por_miembro;
-            let o = calcularAccionesPorMiembro( m )
-            dv.innerHTML+="<li>"+o.nombre+": "+o.porcentaje+"</li>\n";
-        }
+      return {
+        "acciones": susAcciones
+        , "porcentaje": suPorcentaje
+        , "nombre": m.fullName
+        , "id": m.id
+      }
+    }
 
-        function mostrarAccionesPorMiembro( m ) {
-            let dv=dv_acciones_por_miembro;
-            let o = calcularAccionesPorMiembro( m )
-            dv.innerHTML+="<h4>"+o.nombre+" "+o.porcentaje+" ("+o.id+")</h4>\n";
-            dv.innerHTML+="\
-                <p><strong>Acciones totales:</strong> "+o.acciones.length
-                    +" ("+o.porcentaje+")\
+    function mostrarResumenAccionesPorMiembro(m) {
+      let dv = dv_resumen_acciones_por_miembro;
+      let o = calcularAccionesPorMiembro(m)
+      /*dv.innerHTML += "<li>" + 
+        "<a href='https://trello.com/"+o.id+"' target='_new' title='Ver perfil'>"+o.nombre+"</a>: " 
+        + o.porcentaje 
+        + " actividad.</li>\n";*/
+      dv.innerHTML += "<tr>"
+        + "<td class='tc-left'>" + "<a href='https://trello.com/" + o.id + "' target='_new' title='Ver perfil'>" + o.nombre + "</a>" + "</td>"
+        + "<td class='tc-center'>" + o.acciones.length + "</td>"
+        + "<td class='tc-center'>" + o.porcentaje + "</td>"
+        + "</tr>";
+    }
+
+    function mostrarAccionesPorMiembro(m) {
+      let dv = dv_acciones_por_miembro;
+      let o = calcularAccionesPorMiembro(m)
+      dv.innerHTML += "<h4><a href='https://trello.com/"+o.id+"' title='Ver perfil'>"+o.nombre+"</a></h4>\n";
+      dv.innerHTML += "\
+                <p><strong>Acciones totales:</strong> "+ o.acciones.length
+        + " (" + o.porcentaje + ")\
                     </p>\
-                    "    
+                    "
 
-            susTipos=agruparTiposDeAcciones( o.acciones )
-            susLlaves = Object.keys(susTipos).sort()            
-            susLlaves.forEach(e =>
-                dv.innerHTML+="\
+      susTipos = agruparTiposDeAcciones(o.acciones)
+      susLlaves = Object.keys(susTipos).sort()
+      let tmp="<ul>\n";
+      susLlaves.forEach(e =>
+        tmp += "\
                         <li>" + e + ": "
-                        + susTipos[e] 
-                        + " (" + porcentaje(susTipos[e], actionsType[e])+ ")\
+                        + susTipos[e]
+                        + " (" + porcentaje(susTipos[e], actionsType[e]) + ")\
                         </li>\
                     "
-            )
-        }
+      )
+      tmp+="</ul>";
+      dv.innerHTML+=tmp+"<br/><br/>";
+    }
 
-        function mostrarResumenAccionesMiembros() {
-            members.forEach(e => mostrarResumenAccionesPorMiembro(e))
+    function mostrarResumenAccionesMiembros() {
+      members.forEach(e => mostrarResumenAccionesPorMiembro(e))
 
-        }
-        function mostrarAccionesMiembros() {
-            members.forEach(e => mostrarAccionesPorMiembro(e))
+    }
+    function mostrarAccionesMiembros() {
+      members.forEach(e => mostrarAccionesPorMiembro(e))
 
-        }
+    }
 
-        function old( a, prefix ) {
-            prefix = prefix || ""
-            return ( typeof a.data!=="undefined" 
-                    && typeof a.data.old!=="undefined" )?(prefix+JSON.stringify(a.data.old)):""
-        }
+    function old(a, prefix) {
+      prefix = prefix || ""
+      return (typeof a.data !== "undefined"
+        && typeof a.data.old !== "undefined") ? (prefix + "<ul><li>"+JSON.stringify(a.data.old))+"</li></ul>\n" : ""
+    }
 
-        function accionesPorTarjeta( c ) {
-            let dv=dv_acciones_por_tarjeta;
-            dv.innerHTML+="<h4>"+c.name+" ("+c.id+")</h4>\n";
-            let susAcciones =actions_filtered
-                            .filter( e=> typeof e.data!=="undefined" )
-                            .filter( e=>typeof e.data.card!=="undefined")
-                            .filter( e=>e.data.card.id==c.id )
-                            .sort((a,b)=>(new Date(a.date)).getTime()-(new Date(b.date)).getTime())
-            dv.innerHTML+="\
-                <p><strong>Acciones totales:</strong> "+susAcciones.length
-                    +" ("+porcentaje(susAcciones.length, actions_filtered.length)+ ")\
+    function accionesPorTarjeta(c) {
+      let dv = dv_acciones_por_tarjeta;
+      dv.innerHTML += "<h4 class='titulo_tajeta' id='tarjeta_"+c.id+"'>" + c.name +"</h4>\n";
+      let susAcciones = actions_filtered
+        .filter(e => typeof e.data !== "undefined")
+        .filter(e => typeof e.data.card !== "undefined")
+        .filter(e => e.data.card.id == c.id)
+        .sort((a, b) => (new Date(a.date)).getTime() - (new Date(b.date)).getTime())
+      dv.innerHTML += "\
+                <p><strong>Acciones totales:</strong> "+ susAcciones.length
+        + " (" + porcentaje(susAcciones.length, actions_filtered.length) + ")\
                     </p>\
-                    "    
-            
-            susAcciones.forEach(e =>
-                dv.innerHTML+="<li>" 
-                            //+e.id+": "
-                            + e.type +": "
-                            +fecha( e.date )
-                        + old( e, " / <b>Cambios:</b> " )
-                        + "</li>\n"
-            )
-            
-        }
+                    "
+
+      let tmp="<ul>\n"
+      susAcciones.forEach(e =>
+        tmp += "<li>"
+        //+e.id+": "
+        + e.type + ": "
+        + fecha(e.date)
+        + "<em>"+old(e)+"</em>"
+        + "</li>\n"
+      )
+
+      tmp+="</ul>"
+      dv.innerHTML+=tmp+"<br/><br/>"
+
+    }
 
 
-        function accionesTarjetas() {
-            cards.forEach(e => accionesPorTarjeta(e))
+    function accionesTarjetas() {
+      cards.forEach(e => accionesPorTarjeta(e))
+    }
+
+    function asignaEventos() {
+      t_tablero.onblur = function () {
+        board = null
+        start()
+      }
+      t_tablero.onkeydown = function (event) {
+        if (event.keyCode == 13) {
+          t_tablero.blur()
+        }
+      }
+      fecha_inicio.onchange =
+        fecha_final.onchange = function () {
+          imprimeInformacionFiltrandoAccionesPorFechas()
         }
 
-        function asignaEventos() {
-            t_tablero.onblur=function() {
-                board=null                
-                start()
-            }
-            t_tablero.onkeydown=function(event) {
-                if(event.keyCode == 13) {
-                   t_tablero.blur()
-                }
-            }
-            fecha_inicio.onchange=
-            fecha_final.onchange=function() {
-                imprimeInformacionFiltrandoAccionesPorFechas()
-            }
-                        
-        }
+    }
 
-        function vaciaDivs() {
-            let borrables=document.getElementsByClassName( "borrable")
+    function espera() {
+      // (B) WAIT 1 SECOND
+      dv_espera.setAttribute( "class", "visible")
+      setTimeout(ocultaEspera, 500)
+    }
 
-            for( i=0; i<borrables.length; ++i ) {
-                borrables[i].innerHTML=""
-            }
-        }
+    function ocultaEspera() {
+      dv_espera.setAttribute( "class", "invisible")
+    }
 
-        function imprimeInformacionFiltrandoAccionesPorFechas() {
-            rellenaVectores()
-            vaciaDivs()
-            nombreTablero()
-            miembros()
-            numeroDeAcciones()
-            tiposDeAcciones()
-            tarjetas()
-            mostrarResumenAccionesMiembros()    
-            mostrarAccionesMiembros();
-            accionesTarjetas();            
-        }
-        function start() {
-            if ( !board ) {
-                descargaDatos( start )
-                return
-            } 
-            imprimeInformacionFiltrandoAccionesPorFechas()     
-        }
-    </script>
+    function vaciaDivs() {
+      let borrables = document.getElementsByClassName("borrable")
+
+      for (i = 0; i < borrables.length; ++i) {
+        borrables[i].innerHTML = ""
+      }
+    }
+
+    function imprimeInformacionFiltrandoAccionesPorFechas() {
+      rellenaVectores()
+      vaciaDivs()
+      if( !esPrimeraVez ) {
+        espera()
+      }
+      esPrimeraVez=false
+      nombreTablero()
+      //miembros()
+      numeroDeAcciones()
+      tiposDeAcciones()
+      tarjetas()
+      mostrarResumenAccionesMiembros()
+      mostrarAccionesMiembros();
+      accionesTarjetas();
+    }
+    function start() {
+      if (!board) {
+        descargaDatos(start)
+        return
+      }
+      imprimeInformacionFiltrandoAccionesPorFechas()
+    }
+  </script>
 
 </head>
 
 <body>
-    <h1 class="well well-lg well-victor">Análisis de accion en tableros Trello</h1>
+  <h1 class="well well-lg well-victor">Análisis de actividades en tableros Trello</h1>
 
-    <h4>Url del JSON del tablero: <input type="text" id="t_tablero" value="https://trello.com/b/vKq2Qi0w"/>.json</h4>
-    https://trello.com/b/OFvTEfcB
+  <h4 class="well" id="div_url_tablero">
+    <label for="t_tablero">Url del tablero:</label> <input type="text" id="t_tablero"
+      title="Pegue aquí la URL de su tablero Trello"
+      placeholder="https://trello.com/b/vKq2Qi0w" 
+      pattern="https://trello.com/b/[A-Za-z0-9]{6} " 
+      size="30" />&nbsp;&nbsp;&nbsp;
 
-    <p>Fecha inicio: <input type="date" id="fecha_inicio"></p>
-    <p>Fecha final: <input type="date" id="fecha_final"></p>
+    <label for="fecha_inicio">Fecha inicio: </label><input type="date" id="fecha_inicio">&nbsp;&nbsp;&nbsp;
+    <label for="fecha_final">Fecha final: </label><input type="date" id="fecha_final">
+  </h4>
 
-    <h2>Tablero: <span id="sp_nombre_tablero" class="borrable"></span></h2>
 
+
+
+
+  <h2 class="well">Tablero: <span id="sp_nombre_tablero" class="borrable"></span></h2>
+  <div class="well float-left margin-right">
+    <h2>Miembros</h2>
+    <table id="tb_resumen_miebros">
+      <thead>
+        <tr>
+          <th class='tc-left'>Nombre</th>
+          <th class='tc-center'>Núm. acciones</th>
+          <th class='tc-center'>%</th>
+        </tr>
+      </thead>
+      <tbody id="dv_resumen_acciones_por_miembro" class="borrable">
+      </tbody>
+    </table>
+  </div>
+
+  <!--div class="well float-left margin-right">
     <h3>Miembros</h3>
-    <div id="dv_miembros" class="borrable"></div>
+    <ul>
+      <div id="dv_miembros" class="borrable"></div>
+    </ul>
+  </div-->
 
-    
 
-
+  <div class="well float-left margin-right">
     <h3>Número de acciones</h3>
-    <div id="dv_numero_acciones" class="borrable"></div>
+    <ul>
+      <div id="dv_numero_acciones" class="borrable"></div>
+    </ul>
+  </div>
 
+  <div class="well float-left margin-right">
     <h3>Tipos de acciones</h3>
-    <div id="dv_tipo_acciones" class="borrable"></div>
+    <ul>
+      <div id="dv_tipo_acciones" class="borrable"></div>
+    </ul>
+  </div>
 
+  <div class="well float-left margin-right">
     <h3>Tarjetas</h3>
-    <div id="dv_tarjetas" class="borrable"></div>
+    <ul>
+      <div id="dv_tarjetas" class="borrable"></div>
+    </ul>
+  </div>
 
-    <h2>Acciones por miembro</h2>
-    <div id="dv_resumen_acciones_por_miembro" class="borrable"></div>
 
-    <h3>Detalle de acciones por miembro</h2>
+  <div class="well clear float-left margin-right">
+
+    <h3>Detalle de acciones por miembro</h3>
     <div id="dv_acciones_por_miembro" class="borrable"></div>
-
+  </div>
+  <div class="well float-left margin-right">
     <h2>Acciones por tarjeta</h2>
     <div id="dv_acciones_por_tarjeta" class="borrable"></div>
+  </div>
+  <div id="dv_consola" class="borrable"></div>
 
-    <div id="dv_consola" class="borrable"></div>
-    <script>
-        asignaEventos()
-        start()
-    </script>
+
+  <div id="dv_espera" class="invisible">Cargando datos...</div>
+  <script>
+    asignaEventos()
+    start()
+  </script>
 </body>
 
 <style>
   * {
-      font-family: Arial, Helvetica, Sans;
+    font-family: Arial, Helvetica, Sans;
   }
+
   body {
     color: black;
     background-color: white;
   }
+
   body.contraste {
     color: white;
     background-color: black;
   }
-  input{
-      border: 0pt;
-      font-size: 1em;
-      background-color: inherit;
-      border-bottom: 1px solid #ddd;
-      color: inherit;
+
+  input {
+    border: 0pt;
+    font-size: 1em;
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
+    color: inherit;
 
   }
+
   input:hover {
-      background-color: #ddd;
-  }
-  input:focus {
-      background-color: #ddf;
-      color: #229;
-  }
-  input[type="Submit"] {
-      margin-right: 1em;
-  }
-  .rojo {
-      background-color: #daa;
-  }
-  .transparente {
-      background-color: inherit;
-  }
-  label {
-      width: 22%;
-      display: block;
-      float: left;
-      padding: 0pt;
-      margin: 0pt;
-  }
-  h1 {
-      font-size: 150%;
+    background-color: #fff;
+    color: #666;
+
   }
 
-  h3 {
-      font-size: 120%;
+  input:focus {
+    background-color: #fff;
+    color: #222;
+  }
+
+  input[type="Submit"] {
+    margin-right: 1em;
+  }
+
+  .rojo {
+    background-color: #daa;
+  }
+
+  .transparente {
+    background-color: inherit;
+  }
+
+  alabel {
+    width: 22%;
+    display: block;
+    float: left;
+    padding: 0pt;
+    margin: 0pt;
   }
 
   body {
-      margin: 10px;
+    margin: 10px;
   }
 
   select {
-      font-size: 70%;
+    font-size: 70%;
   }
 
-  .well-victor{
-      background: rgb(22, 105, 173);
-      color: #fff;
+  .well-victor {
+    background: rgb(22, 105, 173);
+    color: #fff;
   }
 
   #datos {
-      margin-left: 3em;
-      font-size: 80%;
+    margin-left: 3em;
+    font-size: 80%;
   }
 
 
   .progress {
-      height: 2em;
-  }
-  .progress-bar{
-
-      padding-top: 0.25em;
-      font-size: 120%;
+    height: 2em;
   }
 
+  .progress-bar {
+
+    padding-top: 0.25em;
+    font-size: 120%;
+  }
+
+  #div_url_tablero {
+    background-image: linear-gradient(to bottom, #e8f8e8 0, #f5fff5 100%);
+  }
+
+  .float-left {
+    float: left;
+  }
+
+  .margin-right {
+    margin-right: 5px;
+  }
+
+  .tc-left {
+    text-align: left;
+    padding: 5px;
+  }
+
+  .tc-center {
+    text-align: center;
+    padding: 5px;
+  }
+
+  thead {
+    background-image: linear-gradient(to bottom, #a8a8a8 0, #f5f5f5 100%);
+  }
+
+  .titulo_tajeta {
+    font-weight: bolder;
+  }
+  .clear {
+    clear: both;
+  }
+
+  #dv_espera {
+    border: 1px solid blue;
+    padding: 70px;
+    background-color: #d1d1f7 ;
+    color: black;
+    position: absolute;
+    top: 100px;
+    left: 40%;
+    text-align: center;
+    border-radius: 10px;
+  }
+
+  .visible {
+    visibility: visible;
+    display: block;
+  }
+
+  .invisible {
+    visibility: hidden;
+    display: none;
+  }
+
+  
 </style>
+
 </html>
