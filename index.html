@@ -29,8 +29,8 @@
     // para que no haga esperar al usuario la primera vez que carga la página mientras hace como que "limpia" los divs :)
     var esPrimeraVez = true
 
-    var fin = new Date("2025-04-19T23:55:00.0Z")
-    var inicio = new Date("2021-03-23T00:00:00.0Z")
+    var fin = new Date("2035-04-19T23:55:00.0Z")
+    var inicio = new Date("2010-03-23T00:00:00.0Z")
 
     function porcentaje(a, b) {
       return ((a / b) * 100).toFixed(2) + "%"
@@ -143,7 +143,9 @@
       // Tipos de acciones
       sorted_cards = cards.sort((a, b) => (a.name<b.name?-1:(a.name>b.name)?1:0));
       sorted_cards.forEach(e =>
-        dv_tarjetas.html("<li title='" + e.id + "'>" 
+        dv_tarjetas.html("<li class='"
+          + (calculaAccionesPorTarjeta(e).length<=0?"tachado":"")
+          + "' title='" + e.id + "'>" 
           + "<a href='#tarjeta_"+e.id+"'>"
           + e.name 
           + "</a></li>\n"))
@@ -217,16 +219,23 @@
         && typeof a.data.old !== "undefined") ? (prefix + "<ul><li>"+JSON.stringify(a.data.old))+"</li></ul>\n" : ""
     }
 
-    function accionesPorTarjeta(c) {
-      let dv = dv_acciones_por_tarjeta;
-      dv.innerHTML += "<h4 class='titulo_tajeta' id='tarjeta_"+c.id+"'>" + c.name +"</h4>\n";
+
+    function calculaAccionesPorTarjeta(c) {
       let susAcciones = actions_filtered
         .filter(e => typeof e.data !== "undefined")
         .filter(e => typeof e.data.card !== "undefined")
         .filter(e => e.data.card.id == c.id)
         .sort((a, b) => (new Date(a.date)).getTime() - (new Date(b.date)).getTime())
+      return susAcciones;
+    }
+
+    function accionesPorTarjeta(c) {
+      let dv = dv_acciones_por_tarjeta;
+      let susAcciones = calculaAccionesPorTarjeta(c)
+      let tachado=( susAcciones.length<=0 )?"tachado":"";
+      dv.innerHTML += "<h4 class='titulo_tajeta "+tachado+"' id='tarjeta_"+c.id+"'>" + c.name +"</h4>\n";      
       dv.innerHTML += "\
-                <p><strong>Acciones totales:</strong> "+ susAcciones.length
+                <p class='"+tachado+"'><strong>Acciones totales:</strong> "+ susAcciones.length
         + " (" + porcentaje(susAcciones.length, actions_filtered.length) + ")\
                     </p>\
                     "
@@ -535,6 +544,9 @@
     display: none;
   }
 
+  .tachado {
+    text-decoration: line-through;
+  }
   
 </style>
 
