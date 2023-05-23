@@ -261,8 +261,26 @@
 
     }
 
+    function diferenciasEnTiempos( antes,despues ) {
+      a = new Date(antes.split( ".")[0]).getTime()
+      d = new Date(despues.split( ".")[0]).getTime()
+      dif = parseInt( d-a )/1000
+      dias = parseInt( dif / 86400 )
+      dif = dif-(dias*86400 )
+      horas = parseInt( dif / 3600 )
+      dif = dif-(horas*3600 )
+      minutos = parseInt( dif / 60 )
+      dif = dif-(minutos*60 )
+      segundos = parseInt( dif )
+        
+      return {
+        "segundos": segundos
+        , "minutos": minutos
+        , "horas": horas
+        , "dias": dias
+      }
+    }
 
-    
     function movimientosPorTarjeta(accionesTarjeta) {
       let toRet="<h4>Movimientos</h4><ul>";
       // Selecciono la acción de crear y todas las que impliquen movimiento entre listas
