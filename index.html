@@ -262,19 +262,21 @@
     }
 
 
+    
     function movimientosPorTarjeta(accionesTarjeta) {
-      let toRet="";
+      let toRet="<h4>Movimientos</h4><ul>";
       // Selecciono la acción de crear y todas las que impliquen movimiento entre listas
       let creacion = accionesTarjeta.filter(e => e.type == "createCard")[0]
       let movimientos = accionesTarjeta.filter(e => e.type == "updateCard" && typeof e.data.listAfter !== "undefined")
-      toRet+=creacion.date+" "+creacion.data.list.name+"<br/>"
+      toRet+="<li>Creada el "+fecha( creacion.date ) +" en "+creacion.data.list.name+" por "+creacion.memberCreator.username+"</li>"
       for( let i=0; i<movimientos.length; i++ ) {
-        toRet+=fecha(movimientos[i].date)
+        toRet+="<li>"+fecha(movimientos[i].date)
           +" De "+movimientos[i].data.listBefore.name
           +" a "+movimientos[i].data.listAfter.name
-          +"<br/>"
+          +" por "+movimientos[i].memberCreator.username
+          +"</li>"
       }
-
+      toRet+="</ul>";
       return toRet;
     }
 
