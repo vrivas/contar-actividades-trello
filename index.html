@@ -273,10 +273,10 @@
       dif = dif-(minutos*60 )
       segundos = parseInt( dif )
 
-      return (dias?dias+" d, ":"")
-        +(horas?horas+" h, ":"")
-        +(minutos?minutos+" m, ":"")
-        +(segundos?segundos+" s":"");
+      return (dias?dias+"d, ":"")
+        +(horas?horas+"h, ":"")
+        +(minutos?minutos+"m, ":"")
+        +(segundos?segundos+"s":"");
     }
 
     function movimientosPorTarjeta(accionesTarjeta) {
@@ -284,7 +284,7 @@
       // Selecciono la acción de crear y todas las que impliquen movimiento entre listas
       let creacion = accionesTarjeta.filter(e => e.type == "createCard")[0]  
       let movimientos = accionesTarjeta.filter(e => e.type == "updateCard" && typeof e.data.listAfter !== "undefined")
-      toRet+="<li>Creada el "+fecha( creacion.date ) +" en "+creacion.data.list.name+" por "+creacion.memberCreator.username+"</li>"
+      toRet+="<li>"+fecha( creacion.date ) +": "+creacion.data.list.name+" ("+creacion.memberCreator.username+")</li>"
       let antes = creacion.date
       let despues = null;
       for( let i=0; i<movimientos.length; i++ ) {
@@ -292,10 +292,11 @@
         let dif = diferenciasEnTiempos( antes, despues )
         antes = despues
         toRet+="<li>"+fecha(movimientos[i].date)
-          +" De "+movimientos[i].data.listBefore.name
-          +" a "+movimientos[i].data.listAfter.name
-          +" por "+movimientos[i].memberCreator.username
-          +" tras " + dif 
+          //+" De "+movimientos[i].data.listBefore.name
+          +": "+movimientos[i].data.listAfter.name
+          +": " + dif 
+          +" ("+movimientos[i].memberCreator.username+")"
+          
           +"</li>"
       }
       toRet+="</ul>";
