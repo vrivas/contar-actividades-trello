@@ -236,14 +236,20 @@
       let dv = dv_acciones_por_tarjeta;
       let susAcciones = calculaAccionesPorTarjeta(c)
       let tachado=( susAcciones.length<=0 )?"tachado":"";
-      dv.innerHTML += "<h4 class='titulo_tajeta "+tachado+"' id='tarjeta_"+c.id+"'>" + c.name +"</h4>\n";      
-      dv.innerHTML += "\
-                <p class='"+tachado+"'><strong>Acciones totales:</strong> "+ susAcciones.length
-        + " (" + porcentaje(susAcciones.length, actions_filtered.length) + ")\
-                    </p>\
-                    "
+      let tmp="";
+      tmp+="<h4 class='titulo_tajeta "+tachado+"' id='tarjeta_"+c.id+"'>" + c.name +"</h4>\n";   
 
-      let tmp="<ul>\n"
+      tmp+=movimientosPorTarjeta(susAcciones);
+      tmp+= `
+        <div class='acciones-tarjeta'>
+           <p class='"+tachado+"'><strong>Acciones totales:</strong>${susAcciones.length}
+                (${porcentaje(susAcciones.length, actions_filtered.length)})
+            </p>
+
+            <ul>
+              `;
+              
+
       susAcciones.forEach(e =>
         tmp += "<li>"
         //+e.id+": "
@@ -253,12 +259,8 @@
         + "</li>\n"
       )
 
-      tmp+="</ul>\n"
-      tmp+=movimientosPorTarjeta(susAcciones);
-
+      tmp+="</ul>\n</div>\n"
       dv.innerHTML+=tmp+"<br/><br/>"
-
-
     }
 
     function diferenciasEnTiempos( antes,despues ) {
@@ -280,7 +282,7 @@
     }
 
     function movimientosPorTarjeta(accionesTarjeta) {
-      let toRet="<h4>Movimientos</h4><ul>";
+      let toRet="<h5>Movimientos</h5><ul>";
       // Selecciono la acción de crear y todas las que impliquen movimiento entre listas
       let creacion = accionesTarjeta.filter(e => e.type == "createCard")[0]  
       let movimientos = accionesTarjeta.filter(e => e.type == "updateCard" && typeof e.data.listAfter !== "undefined")
