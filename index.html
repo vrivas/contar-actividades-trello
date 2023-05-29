@@ -218,6 +218,11 @@
 
     function old(a, prefix) {
       prefix = prefix || ""
+      if( typeof a.data !== "undefined"
+        && typeof a.data.old !== "undefined"
+        && a.data.old.hasOwnProperty( "idList")) {
+        a.data.old.cambioListas = "De "+a.data.listBefore.name+" a "+a.data.listAfter.name
+      }
       return (typeof a.data !== "undefined"
         && typeof a.data.old !== "undefined") ? (prefix + "<ul><li>"+JSON.stringify(a.data.old))+"</li></ul>\n" : ""
     }
@@ -231,6 +236,7 @@
         .sort((a, b) => (new Date(a.date)).getTime() - (new Date(b.date)).getTime())
       return susAcciones;
     }
+
 
     function accionesPorTarjeta(c) {
       let dv = dv_acciones_por_tarjeta;
