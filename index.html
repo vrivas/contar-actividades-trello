@@ -37,6 +37,17 @@
       return ((a / b) * 100).toFixed(2) + "%"
     }
 
+    /**
+     * Función que limpia el contenido de los elementos del formulario
+     */
+
+    function reset() {
+      t_tablero.value = ""
+      fecha_inicio.value = ""
+      fecha_final.value = ""
+      board = null
+      start()
+    }
     function fecha(f) {
       return (new Date(f)).toLocaleString("es-ES")
     }
@@ -386,9 +397,11 @@
       placeholder="https://trello.com/b/vKq2Qi0w" 
       pattern="https://trello.com/b/[A-Za-z0-9]{6} " 
       size="30" />&nbsp;&nbsp;&nbsp;
-
     <label for="fecha_inicio">Fecha inicio: </label><input type="date" id="fecha_inicio">&nbsp;&nbsp;&nbsp;
     <label for="fecha_final">Fecha final: </label><input type="date" id="fecha_final">
+    <br/>
+    <input type="reset" class="button" value="Reset" onclick="reset()">
+
   </h4>
 
 
@@ -603,6 +616,17 @@
     text-decoration: line-through;
   }
   
+  .button {
+    border: #4CAF50 1px solid;
+    background-color: darkseagreen;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 2px 2px;
+    cursor: pointer;
+  }
 </style>
 
 </html>
