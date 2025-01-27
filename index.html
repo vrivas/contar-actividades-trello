@@ -208,9 +208,9 @@
       function mostrarResumenAccionesPorMiembro(m) {
         let dv = dv_resumen_acciones_por_miembro;
         let o = calcularAccionesPorMiembro(m);
-        /*dv.innerHTML += "<li>" + 
-        "<a href='https://trello.com/"+o.id+"' target='_new' title='Ver perfil'>"+o.nombre+"</a>: " 
-        + o.porcentaje 
+        /*dv.innerHTML += "<li>" +
+        "<a href='https://trello.com/"+o.id+"' target='_new' title='Ver perfil'>"+o.nombre+"</a>: "
+        + o.porcentaje
         + " actividad.</li>\n";*/
         dv.innerHTML +=
           "<tr>" +
@@ -371,7 +371,18 @@
       function movimientosPorTarjeta(accionesTarjeta) {
         if (accionesTarjeta.length == 0)
           return "<h5>Movimientos</h5><ul><li>No hay movimientos para esta tarjeta</li></ul>";
-        let toRet = "<h5>Movimientos</h5><ul>";
+        let toRet = `<h5>Movimientos</h5>
+          <table class='tabla-movimientos'>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Lista</th>
+                <th>Duración</th>
+                <th>Usuario</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
         // Selecciono la acción de crear y todas las que impliquen movimiento entre listas
         // let creacion = accionesTarjeta.filter((e) => e.type == "createCard")[0];
         // Victor, 27-ene-2025: se pueden crear tarjetas de varias formas, así que me quedo con la primera como creación
@@ -381,33 +392,27 @@
             e.type == "updateCard" && typeof e.data.listAfter !== "undefined"
         );
         toRet +=
-          "<li>" +
+          "<tr><td>" +
           fecha(creacion.date) +
-          ": " +
+          "</td><td> " +
           creacion.data.list.name +
-          " (" +
+          "</td><td></td><td>" +
           creacion.memberCreator.username +
-          ")</li>";
+          "</td></tr>";
         let antes = creacion.date;
         let despues = null;
         for (let i = 0; i < movimientos.length; i++) {
           despues = movimientos[i].date;
           let dif = diferenciasEnTiempos(antes, despues);
           antes = despues;
-          toRet +=
-            "<li>" +
-            fecha(movimientos[i].date) +
-            //+" De "+movimientos[i].data.listBefore.name
-            ": " +
-            movimientos[i].data.listAfter.name +
-            ": " +
-            dif +
-            " (" +
-            movimientos[i].memberCreator.username +
-            ")" +
-            "</li>";
+          toRet += `<tr>
+              <td>${fecha(movimientos[i].date)}</td>
+              <td>${movimientos[i].data.listAfter.name}</td>
+              <td>${dif}</td>
+              <td>${movimientos[i].memberCreator.username}</td>
+            </tr>`;
         }
-        toRet += "</ul>";
+        toRet += "</tbody></table>";
         return toRet;
       }
 
@@ -707,6 +712,24 @@
       font-size: 16px;
       margin: 2px 2px;
       cursor: pointer;
+    }
+
+    .tabla-movimientos td,
+    .tabla-movimientos th {
+      padding: 2px 5px 2px 5px;
+    }
+    .tabla-movimientos {
+      margin-bottom: 2em;
+    }
+    .tabla-movimientos tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .tabla-movimientos tr:nth-child(odd) {
+      background-color: #ffffff;
+    }
+    .tabla-movimientos thead tr:first-child {
+      background-color: rgba(0, 0, 0, 0.3);
     }
   </style>
 </html>
