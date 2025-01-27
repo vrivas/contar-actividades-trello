@@ -287,10 +287,15 @@
           a.data.old.cambioListas =
             "De " + a.data.listBefore.name + " a " + a.data.listAfter.name;
         }
-        return typeof a.data !== "undefined" &&
-          typeof a.data.old !== "undefined"
-          ? prefix + "<ul><li>" + JSON.stringify(a.data.old) + "</li></ul>\n"
-          : "";
+        let toRet =
+          typeof a.data !== "undefined" && typeof a.data.old !== "undefined"
+            ? prefix + "<ul><li>" + JSON.stringify(a.data.old) + "</li></ul>\n"
+            : "";
+
+        return toRet
+          .replace(/\"|\{|}/g, "")
+          .replace(/,/g, " , ")
+          .replace(/:/g, ": ");
       }
 
       function calculaAccionesPorTarjeta(c) {
